@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.7-alpine
 
 VOLUME /conf
 VOLUME /certs
@@ -16,8 +16,18 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 COPY . .
 
-# Install
-RUN pip3 install .
+# Install timezone data
+RUN apk add tzdata
+
+# Install dependencies
+RUN apk add --no-cache gcc libffi-dev openssl-dev musl-dev \
+    && pip install --no-cache-dir .
+
+RUN pip uninstall -y astral
+RUN pip install astral==1.10.1
+
+# Install additional packages
+RUN apk add --no-cache curl
 
 # Start script
 RUN chmod +x /usr/src/app/dockerStart.sh
